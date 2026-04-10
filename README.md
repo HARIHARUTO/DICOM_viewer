@@ -7,6 +7,7 @@ The system provides a browser-based workflow for uploading DICOM studies, synchr
 ## Table of Contents
 
 - [Overview](#overview)
+- [Project Documentation](#project-documentation)
 - [Architecture Principles](#architecture-principles)
 - [System Architecture](#system-architecture)
 - [Technology Stack](#technology-stack)
@@ -32,6 +33,13 @@ Upload -> Backend -> Orthanc -> Metadata Sync -> Frontend -> OHIF Viewer -> Diag
 ```
 
 DICOM files are uploaded through the React dashboard, sent to the Express backend, stored in Orthanc using DICOMweb STOW-RS, indexed into PostgreSQL as metadata, and viewed through OHIF Viewer using QIDO-RS and WADO-RS.
+
+## Project Documentation
+
+Primary project documents:
+
+- [Project documentation](documentation.md): architecture, workflow, QA summary, team contributions, challenges, and future scope.
+- [4-week development plan](PROJECT_PLAN.md): week-by-week plan, completion status, QA plan, and remaining production work.
 
 ## Architecture Principles
 
@@ -122,6 +130,7 @@ The React application does not render medical images. It only manages workflow a
 |   `-- ohif/
 |       `-- app-config.js
 |-- docker-compose.yml
+|-- PROJECT_PLAN.md
 |-- documentation.md
 |-- .env.example
 |-- package.json

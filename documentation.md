@@ -153,7 +153,11 @@ Deployment complexity was reduced by containerizing each major component with Do
 - Add validation steps required for clinical or regulatory deployment
 - Add Selenium or Playwright end-to-end tests for complete browser workflow validation
 
-## 13. Conclusion
+## 13. Project Plan Reference
+
+The detailed four-week development plan is maintained in `PROJECT_PLAN.md`. It includes the week-by-week delivery plan, completion status, QA plan, team execution plan, expected outcome, remaining production work, and assumptions.
+
+## 14. Conclusion
 
 The Zero Footprint DICOM Viewer with Integrated Radiology Workflow System provides a modular and standards-based approach to medical imaging workflows. By using Orthanc for DICOM storage, OHIF for image rendering, PostgreSQL for metadata, and Node.js for orchestration, the system avoids unsafe coupling and follows established DICOMweb practices.
 
