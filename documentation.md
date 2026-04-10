@@ -101,7 +101,19 @@ OHIF is configured as an external viewer service and connected to the backend DI
 
 Docker Compose defines separate services for the frontend, backend, Orthanc, PostgreSQL, and OHIF. This allows each module to be developed, tested, deployed, and scaled independently.
 
-## 9. Team Contributions
+## 9. Quality Assurance and Testing
+
+The project was validated through automated tests, build checks, dependency audits, and infrastructure configuration validation. The QA approach focused on verifying the core medical imaging workflow while preserving the architectural constraints of the system.
+
+Backend validation was performed using Vitest. The tests covered DICOM metadata mapping from QIDO-RS JSON responses, validation of required identifiers such as StudyInstanceUID, and multipart request generation for STOW-RS upload behavior.
+
+Frontend validation was performed using Vitest, React Testing Library, and jsdom. The tests confirmed that the dashboard renders correctly, upload and worklist sections are available, and the application delegates image viewing to OHIF instead of implementing custom DICOM rendering.
+
+Build validation was performed using TypeScript compilation and production build checks for both backend and frontend modules. Dependency security validation was performed using npm audit, and Docker Compose configuration was validated to confirm service wiring, environment variables, ports, volumes, and container dependencies.
+
+Selenium was not used in the current implementation. Browser-level end-to-end testing can be added in a future release using Selenium or Playwright to validate full workflows such as DICOM upload, metadata synchronization, study listing, and OHIF viewer launch in a real browser environment.
+
+## 10. Team Contributions
 
 Hari served as the Team Lead and System Architect. He was the primary contributor responsible for designing the overall architecture, defining the DICOM pipeline, integrating the backend with Orthanc, establishing the DICOMweb workflow, coordinating the Docker-based system orchestration, and ensuring that the system followed the constraints of OHIF-only rendering, Orthanc-based DICOM storage, and PostgreSQL metadata-only persistence.
 
@@ -115,7 +127,7 @@ Varsha supported documentation, testing, and review activities. Her work include
 
 Tejas supported testing, minor feature review, and project documentation refinement. He assisted with checking system behavior, reviewing deployment steps, and validating that the final workflow was understandable for demonstration and submission.
 
-## 10. Challenges Faced and Solutions
+## 11. Challenges Faced and Solutions
 
 One major challenge was maintaining a clear separation between DICOM storage, metadata storage, image rendering, and application logic. This was addressed by using Orthanc exclusively for DICOM storage, PostgreSQL only for metadata, OHIF only for rendering, and Express only for orchestration and APIs.
 
@@ -127,7 +139,7 @@ Metadata consistency was another important concern. The backend addresses this b
 
 Deployment complexity was reduced by containerizing each major component with Docker Compose. This allowed the team to run the full system with a consistent multi-container setup.
 
-## 11. Future Scope
+## 12. Future Scope
 
 - Add role-based access control for radiologists, technicians, administrators, and referring physicians
 - Add audit logs for study access, uploads, and viewing events
@@ -139,8 +151,9 @@ Deployment complexity was reduced by containerizing each major component with Do
 - Add production security hardening, including HTTPS, secrets management, and stricter network policies
 - Add monitoring, alerting, and operational dashboards
 - Add validation steps required for clinical or regulatory deployment
+- Add Selenium or Playwright end-to-end tests for complete browser workflow validation
 
-## 12. Conclusion
+## 13. Conclusion
 
 The Zero Footprint DICOM Viewer with Integrated Radiology Workflow System provides a modular and standards-based approach to medical imaging workflows. By using Orthanc for DICOM storage, OHIF for image rendering, PostgreSQL for metadata, and Node.js for orchestration, the system avoids unsafe coupling and follows established DICOMweb practices.
 
