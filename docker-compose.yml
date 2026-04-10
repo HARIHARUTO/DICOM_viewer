@@ -1,0 +1,90 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: dicom-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-dicom_metadata}
+      POSTGRES_USER: ${POSTGRES_USER:-dicom_app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dicom_app_password}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-dicom_app} -d ${POSTGRES_DB:-dicom_metadata}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  orthanc:
+    image: orthancteam/orthanc:26.1.0
+    container_name: dicom-orthanc
+    restart: unless-stopped
+    environment:
+      ORTHANC__NAME: DICOM_VIEWER_ORTHANC
+      ORTHANC__REMOTE_ACCESS_ALLOWED: "true"
+      ORTHANC__AUTHENTICATION_ENABLED: "true"
+      ORTHANC__REGISTERED_USERS: '{"orthanc":"orthanc"}'
+      ORTHANC__DEFAULT_ENCODING: Utf8
+      DICOM_WEB_PLUGIN_ENABLED: "true"
+      ORTHANC__DICOM_WEB__ENABLE: "true"
+      ORTHANC__DICOM_WEB__ROOT: /dicom-web/
+      ORTHANC__DICOM_WEB__ENABLE_WADO: "true"
+      ORTHANC__DICOM_WEB__WADO_ROOT: /wado
+      ORTHANC__DICOM_WEB__QIDO_CASE_SENSITIVE: "false"
+    ports:
+      - "${ORTHANC_HTTP_PORT:-8042}:8042"
+    volumes:
+      - orthanc-storage:/var/lib/orthanc/db
+
+  backend:
+    build:
+      context: ./backend
+    container_name: dicom-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: postgres://${POSTGRES_USER:-dicom_app}:${POSTGRES_PASSWORD:-dicom_app_password}@postgres:5432/${POSTGRES_DB:-dicom_metadata}
+      ORTHANC_DICOMWEB_URL: http://orthanc:8042/dicom-web
+      ORTHANC_USERNAME: ${ORTHANC_USERNAME:-orthanc}
+      ORTHANC_PASSWORD: ${ORTHANC_PASSWORD:-orthanc}
+      CORS_ORIGINS: http://localhost:${FRONTEND_PORT:-3000},http://localhost:${OHIF_PORT:-3001}
+      MAX_UPLOAD_FILES: 200
+      MAX_UPLOAD_BYTES: 1073741824
+    ports:
+      - "${BACKEND_PORT:-4000}:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      orthanc:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: http://localhost:${BACKEND_PORT:-4000}/api
+        VITE_OHIF_BASE_URL: http://localhost:${OHIF_PORT:-3001}
+    container_name: dicom-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    depends_on:
+      - backend
+
+  ohif:
+    image: ohif/app:latest
+    container_name: dicom-ohif
+    restart: unless-stopped
+    ports:
+      - "${OHIF_PORT:-3001}:80"
+    volumes:
+      - ./infra/ohif/app-config.js:/usr/share/nginx/html/app-config.js:ro
+    depends_on:
+      - backend
+
+volumes:
+  postgres-data:
+  orthanc-storage:

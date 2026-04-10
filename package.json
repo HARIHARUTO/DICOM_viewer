@@ -1,0 +1,16 @@
+{
+  "name": "dicom-viewer-platform",
+  "private": true,
+  "scripts": {
+    "backend:install": "npm --prefix backend install",
+    "frontend:install": "npm --prefix frontend install",
+    "install:all": "npm run backend:install && npm run frontend:install",
+    "backend:dev": "npm --prefix backend run dev",
+    "frontend:dev": "npm --prefix frontend run dev",
+    "backend:test": "npm --prefix backend test",
+    "frontend:test": "npm --prefix frontend test",
+    "test": "npm run backend:test && npm run frontend:test",
+    "build": "npm --prefix backend run build && npm --prefix frontend run build"
+  }
+}
+
