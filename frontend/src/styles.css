@@ -1,3 +1,10 @@
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  transition: background 0.3s ease;
+}
+
 :root {
   color: #1c1f23;
   background: #f7f8f6;
@@ -38,12 +45,18 @@ input {
 button {
   min-height: 44px;
   border: 0;
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 0.7rem 1rem;
   background: var(--green);
   color: #ffffff;
   cursor: pointer;
   font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+button:hover:not(:disabled) {
+  background: var(--green-dark);
+  transform: translateY(-1px);
 }
 
 button:hover:not(:disabled) {
@@ -241,10 +254,20 @@ h2 {
   padding: 18px;
 }
 
+.study-card {
+  transition: all 0.25s ease;
+}
+
+.study-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
 .study-title {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   font-weight: 800;
+  color: #0f172a;
 }
 
 .study-subtitle {
@@ -263,6 +286,7 @@ h2 {
   min-width: 0;
   padding-top: 10px;
   border-top: 1px solid var(--line);
+  padding-bottom: 6px;
 }
 
 .study-meta dt {
@@ -296,10 +320,11 @@ h2 {
 
 .empty-state {
   border: 1px dashed var(--line);
-  border-radius: 8px;
-  padding: 24px;
+  border-radius: 10px;
+  padding: 28px;
   color: var(--muted);
-  background: var(--wash);
+  background: linear-gradient(135deg, #f8fafc, #edf4ef);
+  text-align: center;
 }
 
 @media (max-width: 800px) {
@@ -327,4 +352,112 @@ h2 {
     width: 100%;
   }
 }
+.chat-panel {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #f8fafc;
+}
 
+.chat-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.message {
+  padding: 10px 14px;
+  border-radius: 12px;
+  max-width: 60%;
+  font-size: 14px;
+}
+
+.message.doctor {
+  background: #e2e8f0;
+  align-self: flex-start;
+}
+
+.message.system {
+  background: #ecfeff;
+  align-self: flex-end;
+}
+
+.chat-upload {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.chat-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+}
+
+/* Row alignment */
+.chat-row {
+  display: flex;
+}
+
+.chat-row.doctor {
+  justify-content: flex-start;
+}
+
+.chat-row.patient {
+  justify-content: flex-end;
+}
+
+.chat-row.system {
+  justify-content: center;
+}
+
+/* Bubble style */
+.chat-bubble {
+  max-width: 65%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 14px;
+}
+
+/* Doctor (left) */
+.chat-row.doctor .chat-bubble {
+  background-color: #e2e8f0;
+  color: #1e293b;
+}
+
+/* Patient (right) */
+.chat-row.patient .chat-bubble {
+  background-color: #22c55e;
+  color: white;
+}
+
+/* System (center) */
+.chat-row.system .chat-bubble {
+  background-color: #f1f5f9;
+  color: #475569;
+  font-size: 13px;
+}
+
+.chat-bubble.typing {
+  font-style: italic;
+  opacity: 0.7;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+
+.chat-panel {
+  height: 500px;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-box {
+  flex: 1;
+  overflow-y: auto;
+}

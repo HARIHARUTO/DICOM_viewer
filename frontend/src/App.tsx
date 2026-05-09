@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState, useRef } from 'react';
 import { api } from './api';
 import { appConfig } from './config';
 import { formatBytes, formatDicomDate, formatDicomTime } from './format';
@@ -17,6 +17,37 @@ const emptyFilters = {
   modality: '',
 };
 
+const modalityIcons: Record<string, string> = {
+  CT: "🧠",
+  MR: "🧠",
+  CR: "🦴",
+  DX: "🦴",
+  US: "🫀",
+  OP: "👁",
+  OCT: "👁",
+  OPT: "👁",
+  OT: "📷",
+};
+
+const modalityMap: Record<string, string> = {
+  CT: "CT Scan",
+  MR: "MRI",
+  CR: "X-ray",
+  DX: "X-ray",
+  US: "Ultrasound",
+  PT: "PET Scan",
+  OPT: "Optical Imaging",
+  OCT: "OCT",
+  OP: "Ophthalmic Imaging",
+  OT: "Other Imaging",
+};
+
+type Message = {
+  sender: 'doctor' | 'patient' | 'system';
+  text?: string;
+  fileName?: string;
+};
+
 function App() {
   const [studies, setStudies] = useState<Study[]>([]);
   const [total, setTotal] = useState(0);
@@ -26,7 +57,14 @@ function App() {
   const [uploading, setUploading] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [notice, setNotice] = useState<Notice | null>(null);
-
+const [isTyping, setIsTyping] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([
+  { sender: 'doctor', text: 'Please upload your scan for review.' },
+]);[]
+>([
+  { sender: 'doctor', text: 'Please upload your scan for review.' },
+]);
+const chatEndRef = useRef<HTMLDivElement | null>(null);
   const selectedSize = useMemo(() => files.reduce((sum, file) => sum + file.size, 0), [files]);
 
   const loadStudies = async () => {
@@ -57,6 +95,14 @@ function App() {
     void loadStudies();
   }, []);
 
+useEffect(() => {
+  void loadStudies();
+}, []);
+
+useEffect(() => {
+  chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+}, [messages, isTyping]);
+
   const handleSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     void loadStudies();
@@ -68,10 +114,9 @@ function App() {
 
     try {
       const response = await api.syncStudies();
-      setNotice({
-        tone: 'success',
-        message: `Metadata sync complete. ${response.synced} studies synced, ${response.skipped} skipped.`,
-      });
+      setMessages((prev) => [
+  ...prev,
+]);
       await loadStudies();
     } catch (error) {
       setNotice({
@@ -103,6 +148,35 @@ function App() {
           response.totalBytes,
         )}. ${response.metadataSync.synced} studies synced.`,
       });
+
+setMessages((prev) => [
+  ...prev,
+  { sender: 'system', text: '✅ Scan uploaded successfully' },
+]);
+
+// show typing
+setIsTyping(true);
+
+// simulate doctor delay
+setTimeout(() => {
+  setIsTyping(false);
+
+  const fileName = files[0]?.name || '';
+
+  let response = 'Scan received. Reviewing now...';
+
+  if (fileName.includes('CT')) {
+    response = 'CT scan received. Checking brain structures...';
+  } else if (fileName.includes('OCT') || fileName.includes('OP')) {
+    response = 'Eye scan received. Analyzing retina layers...';
+  }
+
+  setMessages((prev) => [
+    ...prev,
+    { sender: 'doctor', text: response },
+  ]);
+}, 1500);
+
       await loadStudies();
     } catch (error) {
       setNotice({
@@ -121,148 +195,235 @@ function App() {
   };
 
   return (
-    <main className="app-shell">
-      <section className="top-band" aria-labelledby="page-title">
-        <div>
-          <p className="eyebrow">Orthanc + OHIF</p>
-          <h1 id="page-title">DICOM Imaging Worklist</h1>
-          <p className="lede">Upload studies to Orthanc, sync metadata to PostgreSQL, and open images in OHIF.</p>
-        </div>
-        <div className="status-panel" aria-label="Runtime endpoints">
-          <span>API {appConfig.apiBaseUrl}</span>
-          <span>OHIF {appConfig.ohifBaseUrl}</span>
-        </div>
-      </section>
+  <main className="app-shell">
+    <div className="layout">
 
-      {notice ? <div className={`notice ${notice.tone}`}>{notice.message}</div> : null}
+      {/* LEFT SIDE */}
+      <div className="main-content">
 
-      <section className="action-grid" aria-label="DICOM worklist actions">
-        <form className="upload-panel" onSubmit={handleUpload}>
-          <h2>Upload DICOM</h2>
-          <p>Files are streamed to Orthanc by STOW-RS. PostgreSQL receives metadata only.</p>
-          <label className="file-picker">
-            <span>Choose DICOM files</span>
-            <input
-              type="file"
-              multiple
-              accept=".dcm,application/dicom,application/octet-stream"
-              onChange={(event) => setFiles(Array.from(event.target.files ?? []))}
-            />
-          </label>
-          <div className="file-summary">
-            <span>{files.length} files selected</span>
-            <span>{formatBytes(selectedSize)}</span>
-          </div>
-          <button type="submit" disabled={uploading}>
-            {uploading ? 'Uploading...' : 'Upload to Orthanc'}
-          </button>
-        </form>
-
-        <form className="search-panel" onSubmit={handleSearch}>
-          <h2>Find Studies</h2>
-          <div className="filters">
-            <label>
-              Patient name
-              <input
-                value={filters.patientName}
-                onChange={(event) => setFilters((current) => ({ ...current, patientName: event.target.value }))}
-                autoComplete="off"
-              />
-            </label>
-            <label>
-              Patient ID
-              <input
-                value={filters.patientId}
-                onChange={(event) => setFilters((current) => ({ ...current, patientId: event.target.value }))}
-                autoComplete="off"
-              />
-            </label>
-            <label>
-              Accession
-              <input
-                value={filters.accessionNumber}
-                onChange={(event) => setFilters((current) => ({ ...current, accessionNumber: event.target.value }))}
-                autoComplete="off"
-              />
-            </label>
-            <label>
-              Modality
-              <input
-                value={filters.modality}
-                onChange={(event) => setFilters((current) => ({ ...current, modality: event.target.value }))}
-                autoComplete="off"
-                maxLength={16}
-              />
-            </label>
-          </div>
-          <div className="button-row">
-            <button type="submit" disabled={loading}>
-              {loading ? 'Searching...' : 'Search'}
-            </button>
-            <button className="secondary" type="button" onClick={handleSync} disabled={syncing}>
-              {syncing ? 'Syncing...' : 'Sync from Orthanc'}
-            </button>
-          </div>
-        </form>
-      </section>
-
-      <section className="study-section" aria-labelledby="studies-title">
-        <div className="section-heading">
+        <section className="top-band" aria-labelledby="page-title">
           <div>
-            <p className="eyebrow">QIDO metadata</p>
-            <h2 id="studies-title">Studies</h2>
+            <p className="eyebrow">Orthanc + OHIF</p>
+            <h1 id="page-title">DICOM Imaging Worklist</h1>
+            <p className="lede">
+              Upload studies to Orthanc, sync metadata to PostgreSQL, and open images in OHIF.
+            </p>
           </div>
-          <span>{total} total</span>
-        </div>
+          <div className="status-panel">
+            <span>API {appConfig.apiBaseUrl}</span>
+            <span>OHIF {appConfig.ohifBaseUrl}</span>
+          </div>
+        </section>
 
-        {loading ? <p className="empty-state">Loading studies...</p> : null}
-
-        {!loading && studies.length === 0 ? (
-          <p className="empty-state">No studies found. Upload DICOM files or sync metadata from Orthanc.</p>
+        {notice ? (
+          <div className={`notice ${notice.tone}`}>
+            {notice.message}
+          </div>
         ) : null}
 
-        <div className="study-list">
-          {studies.map((study) => (
-            <article className="study-card" key={study.studyInstanceUid}>
-              <div>
-                <p className="study-title">{study.studyDescription || 'Untitled study'}</p>
-                <p className="study-subtitle">
-                  {study.patientName || 'Unknown patient'} {study.patientId ? `(${study.patientId})` : ''}
+        {/* UPLOAD + SEARCH */}
+        <section className="action-grid" aria-label="DICOM worklist actions">
+
+          {/* Upload */}
+          <form className="upload-panel" onSubmit={handleUpload}>
+            <h2>Upload DICOM</h2>
+            <p>Files are streamed to Orthanc by STOW-RS. PostgreSQL receives metadata only.</p>
+
+            <label className="file-picker">
+              <span>Choose DICOM files</span>
+              <input
+                type="file"
+                multiple
+                accept=".dcm,application/dicom,application/octet-stream"
+                onChange={(event) =>
+                  setFiles(Array.from(event.target.files ?? []))
+                }
+              />
+            </label>
+
+            <div className="file-summary">
+              <span>{files.length} files selected</span>
+              <span>{formatBytes(selectedSize)}</span>
+            </div>
+
+            <button type="submit" disabled={uploading}>
+              {uploading ? 'Uploading...' : 'Upload to Orthanc'}
+            </button>
+          </form>
+
+          {/* Search */}
+          <form className="search-panel" onSubmit={handleSearch}>
+            <h2>Find Studies</h2>
+
+            <div className="filters">
+              <label>
+                Patient name
+                <input
+                  value={filters.patientName}
+                  onChange={(e) =>
+                    setFilters((c) => ({ ...c, patientName: e.target.value }))
+                  }
+                />
+              </label>
+
+              <label>
+                Patient ID
+                <input
+                  value={filters.patientId}
+                  onChange={(e) =>
+                    setFilters((c) => ({ ...c, patientId: e.target.value }))
+                  }
+                />
+              </label>
+
+              <label>
+                Accession
+                <input
+                  value={filters.accessionNumber}
+                  onChange={(e) =>
+                    setFilters((c) => ({ ...c, accessionNumber: e.target.value }))
+                  }
+                />
+              </label>
+
+              <label>
+                Modality
+                <select
+                  value={filters.modality}
+                  onChange={(e) =>
+                    setFilters((c) => ({ ...c, modality: e.target.value }))
+                  }
+                >
+                  <option value="">All</option>
+                  <option value="CT">CT</option>
+                  <option value="MR">MRI</option>
+                  <option value="CR">X-ray</option>
+                  <option value="US">Ultrasound</option>
+                  <option value="OP">Ophthalmic</option>
+                </select>
+              </label>
+            </div>
+
+            <div className="button-row">
+              <button type="submit" disabled={loading}>
+                {loading ? 'Searching...' : 'Search'}
+              </button>
+
+              <button
+                type="button"
+                className="secondary"
+                onClick={handleSync}
+                disabled={syncing}
+              >
+                {syncing ? 'Syncing...' : 'Sync from Orthanc'}
+              </button>
+            </div>
+          </form>
+
+        </section>
+
+        {/* STUDIES */}
+        <section className="study-section">
+          <div className="section-heading">
+            <h2>Studies</h2>
+            <span>{total} total</span>
+          </div>
+
+          {loading && <p>Loading studies...</p>}
+
+          {!loading && studies.length === 0 && (
+            <p>No scans available</p>
+          )}
+
+          <div className="study-list">
+            {studies.map((study) => (
+              <div key={study.studyInstanceUid} className="study-card">
+
+                <p className="study-title">
+                  {study.studyDescription ||
+                    `${modalityMap[study.modalities[0]] || 'Scan'} ${
+                      study.studyDate ? `• ${formatDicomDate(study.studyDate)}` : ''
+                    }`}
                 </p>
-              </div>
-              <dl className="study-meta">
-                <div>
-                  <dt>Date</dt>
-                  <dd>
-                    {formatDicomDate(study.studyDate)}
-                    {study.studyTime ? ` ${formatDicomTime(study.studyTime)}` : ''}
-                  </dd>
-                </div>
-                <div>
-                  <dt>Modality</dt>
-                  <dd>{study.modalities.length ? study.modalities.join(', ') : 'Unknown'}</dd>
-                </div>
-                <div>
-                  <dt>Series</dt>
-                  <dd>{study.numberOfSeries ?? 'Unknown'}</dd>
-                </div>
-                <div>
-                  <dt>Instances</dt>
-                  <dd>{study.numberOfInstances ?? 'Unknown'}</dd>
-                </div>
-              </dl>
-              <div className="study-footer">
-                <code>{study.studyInstanceUid}</code>
-                <button type="button" onClick={() => openInOhif(study.studyInstanceUid)}>
-                  Open in OHIF
+
+                <p className="study-subtitle">
+                  {study.patientName || 'Unknown patient'}
+                </p>
+
+                <button onClick={() => openInOhif(study.studyInstanceUid)}>
+                  🔍 View Scan
                 </button>
+
               </div>
-            </article>
-          ))}
-        </div>
-      </section>
-    </main>
-  );
+            ))}
+          </div>
+        </section>
+
+      </div>
+
+      {/* RIGHT SIDE CHAT */}
+      <div className="chat-sidebar">
+
+        <section className="chat-panel">
+          <h2>Consultation Chat</h2>
+
+          <div className="chat-box">
+            {messages.map((msg, i) => (
+              <div key={i} className={`chat-row ${msg.sender}`}>
+                <div className="chat-bubble">
+  {msg.fileName ? (
+    <div className="file-bubble">
+      📁 {msg.fileName}
+    </div>
+  ) : (
+    msg.text
+  )}
+</div>
+              </div>
+            ))}
+
+            {isTyping && (
+              <div className="chat-row doctor">
+                <div className="chat-bubble typing">
+                  Doctor is typing...
+                </div>
+              </div>
+            )}
+
+            <div ref={chatEndRef} />
+          </div>
+
+          <form onSubmit={handleUpload} className="chat-upload">
+  <input
+    type="file"
+    multiple
+    onChange={(e) => {
+      const selected = Array.from(e.target.files || []);
+      setFiles(selected);
+
+      if (selected.length > 0) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            sender: 'patient',
+            fileName: selected[0].name,
+          },
+        ]);
+      }
+    }}
+  />
+
+  <button type="submit">
+    {uploading ? 'Sending...' : 'Send Scan'}
+  </button>
+</form>
+        </section>
+
+      </div>
+
+    </div>
+  </main>
+);
 }
 
 export default App;
