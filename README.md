@@ -1,5 +1,13 @@
 # Zero Footprint DICOM Viewer with Integrated Radiology Workflow System
 
+# Team Members
+-HARI SANKAR REDDY YARAM
+-Uma MP
+-Varsha CP
+-Shreya GS
+-Aisiri K
+-Tejas S Chandrashekhar
+
 Production-oriented medical imaging workflow platform built with React, Express, Orthanc, OHIF Viewer, PostgreSQL, and Docker.
 
 The system provides a browser-based workflow for uploading DICOM studies, synchronizing metadata, listing studies, and launching OHIF Viewer for image review. It follows a decoupled architecture where the viewer, backend, DICOM server, and database have separate responsibilities.
