@@ -1,12 +1,14 @@
 # Zero Footprint DICOM Viewer with Integrated Radiology Workflow System
 
-# Team Members
--HARI SANKAR REDDY YARAM
--Uma MP
--Varsha CP
--Shreya GS
--Aisiri K
--Tejas S Chandrashekhar
+Team Members-
+
+- Hari Sankar Reddy Yaram
+- Uma MP
+- Varsha CP
+- Shreya GS
+- Aisiri K
+- Tejas S Chandrashekhar
+
 
 Production-oriented medical imaging workflow platform built with React, Express, Orthanc, OHIF Viewer, PostgreSQL, and Docker.
 
