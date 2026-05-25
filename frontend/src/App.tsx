@@ -49,6 +49,7 @@ type Message = {
 };
 
 function App() {
+  const [role, setRole] = useState<'doctor' | 'patient' | 'admin'>('patient');
   const [studies, setStudies] = useState<Study[]>([]);
   const [total, setTotal] = useState(0);
   const [filters, setFilters] = useState(emptyFilters);
@@ -204,6 +205,20 @@ setTimeout(() => {
         <section className="top-band" aria-labelledby="page-title">
           <div>
             <p className="eyebrow">Orthanc + OHIF</p>
+            <div className="role-switcher">
+  <label>Select Role:</label>
+
+  <select
+    value={role}
+    onChange={(e) =>
+      setRole(e.target.value as 'doctor' | 'patient' | 'admin')
+    }
+  >
+    <option value="patient">Patient</option>
+    <option value="doctor">Doctor</option>
+    <option value="admin">Admin</option>
+  </select>
+</div>
             <h1 id="page-title">DICOM Imaging Worklist</h1>
             <p className="lede">
               Upload studies to Orthanc, sync metadata to PostgreSQL, and open images in OHIF.
@@ -225,6 +240,7 @@ setTimeout(() => {
         <section className="action-grid" aria-label="DICOM worklist actions">
 
           {/* Upload */}
+          {role === 'patient' || role === 'admin' ? (
           <form className="upload-panel" onSubmit={handleUpload}>
             <h2>Upload DICOM</h2>
             <p>Files are streamed to Orthanc by STOW-RS. PostgreSQL receives metadata only.</p>
@@ -250,6 +266,7 @@ setTimeout(() => {
               {uploading ? 'Uploading...' : 'Upload to Orthanc'}
             </button>
           </form>
+          ) : null}
 
           {/* Search */}
           <form className="search-panel" onSubmit={handleSearch}>
@@ -309,6 +326,7 @@ setTimeout(() => {
                 {loading ? 'Searching...' : 'Search'}
               </button>
 
+              {role !== 'patient' && (
               <button
                 type="button"
                 className="secondary"
@@ -317,13 +335,15 @@ setTimeout(() => {
               >
                 {syncing ? 'Syncing...' : 'Sync from Orthanc'}
               </button>
+              )}
             </div>
           </form>
 
         </section>
 
         {/* STUDIES */}
-        <section className="study-section">
+        {role !== 'patient' && (
+<section className="study-section">
           <div className="section-heading">
             <h2>Studies</h2>
             <span>{total} total</span>
@@ -358,7 +378,7 @@ setTimeout(() => {
             ))}
           </div>
         </section>
-
+        )}
       </div>
 
       {/* RIGHT SIDE CHAT */}
