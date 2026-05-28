@@ -226,6 +226,39 @@ body {
 
 .hero-status strong {
   font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.hero-status small {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.35;
+  opacity: 0.82;
+}
+
+.pacs-status strong {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pacs-status i {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: #fde68a;
+  box-shadow: 0 0 0 4px rgba(253, 230, 138, 0.16);
+}
+
+.pacs-status.online i {
+  background: #86efac;
+  box-shadow: 0 0 0 4px rgba(134, 239, 172, 0.18);
+}
+
+.pacs-status.offline i {
+  background: #fca5a5;
+  box-shadow: 0 0 0 4px rgba(252, 165, 165, 0.18);
 }
 
 /* GRID */

@@ -16,12 +16,71 @@ type Message = {
   fileName?: string;
 };
 
+type Role = 'doctor' | 'patient' | 'admin';
+
+type Page =
+  | 'dashboard'
+  | 'uploads'
+  | 'patients'
+  | 'studies'
+  | 'consultation'
+  | 'reports';
+
+type PacsStatus = {
+  state: 'checking' | 'online' | 'offline';
+  label: string;
+  detail: string;
+};
+
 const emptyFilters = {
   patientName: '',
   patientId: '',
   accessionNumber: '',
   modality: '',
 };
+
+const navItems: Array<{
+  page: Page;
+  label: string;
+  roles: Role[];
+}> = [
+  {
+    page: 'dashboard',
+    label: '🏠 Dashboard',
+    roles: ['admin', 'doctor', 'patient'],
+  },
+  {
+    page: 'uploads',
+    label: '📤 Uploads',
+    roles: ['admin', 'patient'],
+  },
+  {
+    page: 'patients',
+    label: '🧑 Patients',
+    roles: ['admin'],
+  },
+  {
+    page: 'studies',
+    label: '🩻 Studies',
+    roles: ['admin', 'doctor'],
+  },
+  {
+    page: 'consultation',
+    label: '💬 Consultation',
+    roles: ['doctor', 'patient'],
+  },
+  {
+    page: 'reports',
+    label: '📊 Reports',
+    roles: ['doctor'],
+  },
+];
+
+const canAccessPage = (role: Role, page: Page) =>
+  navItems.some(
+    (item) =>
+      item.page === page && item.roles.includes(role),
+  );
 
 const modalityIcons: Record<string, string> = {
   CT: '🧠',
@@ -49,15 +108,21 @@ const modalityMap: Record<string, string> = {
 };
 
 function App() {
-  const [activePage, setActivePage] = useState('dashboard');
+  const [activePage, setActivePage] =
+    useState<Page>('dashboard');
 
-  const [role, setRole] = useState<
-    'doctor' | 'patient' | 'admin'
-  >('patient');
+  const [role, setRole] =
+    useState<Role>('patient');
 
   const isPatient = role === 'patient';
   const isDoctor = role === 'doctor';
   const isAdmin = role === 'admin';
+  const canUpload = isPatient || isAdmin;
+  const canSearchStudies = isDoctor || isAdmin;
+  const canViewStudies = isDoctor || isAdmin;
+  const canSyncStudies = isAdmin;
+  const canViewPatientDirectory = isAdmin;
+  const canViewReports = isDoctor;
 
   const [studies, setStudies] = useState<Study[]>([]);
   const [total, setTotal] = useState(0);
@@ -69,6 +134,12 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [pacsStatus, setPacsStatus] =
+    useState<PacsStatus>({
+      state: 'checking',
+      label: 'Checking',
+      detail: 'Contacting Orthanc',
+    });
 
   const [notice, setNotice] =
     useState<Notice | null>(null);
@@ -96,7 +167,14 @@ function App() {
 
   useEffect(() => {
     void loadStudies();
+    void loadPacsStatus();
   }, []);
+
+  useEffect(() => {
+    if (!canAccessPage(role, activePage)) {
+      setActivePage('dashboard');
+    }
+  }, [activePage, role]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({
@@ -144,6 +222,41 @@ function App() {
   ) => {
     event.preventDefault();
     void loadStudies();
+  };
+
+  const loadPacsStatus = async () => {
+    setPacsStatus({
+      state: 'checking',
+      label: 'Checking',
+      detail: 'Contacting Orthanc',
+    });
+
+    try {
+      const response = await api.getPacsStatus();
+      const orthancReady =
+        response.status === 'ready' &&
+        response.checks?.orthancDicomweb === 'ok';
+
+      setPacsStatus(
+        orthancReady
+          ? {
+              state: 'online',
+              label: 'Online',
+              detail: 'Orthanc DICOMweb ready',
+            }
+          : {
+              state: 'offline',
+              label: 'Offline',
+              detail: 'Orthanc check failed',
+            },
+      );
+    } catch {
+      setPacsStatus({
+        state: 'offline',
+        label: 'Offline',
+        detail: 'Health check unavailable',
+      });
+    }
   };
 
   const handleSync = async () => {
@@ -310,13 +423,11 @@ function App() {
             <span>Select Role</span>
 
             <select
+              aria-label="Select Role"
               value={role}
               onChange={(e) =>
                 setRole(
-                  e.target.value as
-                    | 'doctor'
-                    | 'patient'
-                    | 'admin',
+                  e.target.value as Role,
                 )
               }
             >
@@ -353,6 +464,7 @@ function App() {
           </button>
 
           <button
+            hidden={!canUpload}
             className={`nav-item ${
               activePage === 'uploads'
                 ? 'active'
@@ -366,6 +478,7 @@ function App() {
           </button>
 
           <button
+            hidden={!canViewPatientDirectory}
             className={`nav-item ${
               activePage === 'patients'
                 ? 'active'
@@ -379,6 +492,7 @@ function App() {
           </button>
 
           <button
+            hidden={!canViewStudies}
             className={`nav-item ${
               activePage === 'studies'
                 ? 'active'
@@ -392,6 +506,7 @@ function App() {
           </button>
 
           <button
+            hidden={isAdmin}
             className={`nav-item ${
               activePage === 'consultation'
                 ? 'active'
@@ -407,6 +522,7 @@ function App() {
           </button>
 
           <button
+            hidden={!canViewReports}
             className={`nav-item ${
               activePage === 'reports'
                 ? 'active'
@@ -452,6 +568,19 @@ function App() {
 
       <div className="hero-status">
 
+        <div
+          aria-label={`PACS Status ${pacsStatus.label}`}
+          className={`pacs-status ${pacsStatus.state}`}
+          role="status"
+        >
+          <span>PACS Status</span>
+          <strong>
+            <i aria-hidden="true" />
+            {pacsStatus.label}
+          </strong>
+          <small>{pacsStatus.detail}</small>
+        </div>
+
         <div>
           <span>API</span>
           <strong>
@@ -481,13 +610,15 @@ function App() {
 
   {/* UPLOADS PAGE */}
 
-  {(activePage === 'dashboard' ||
+  {((canUpload || canSearchStudies) &&
+    (activePage === 'dashboard' ||
     activePage === 'uploads') && (
 
     <div className="workspace-grid">
 
       {/* UPLOAD */}
 
+      {canUpload && (
       <form
         className="upload-card"
         onSubmit={handleUpload}
@@ -554,10 +685,11 @@ function App() {
         </button>
 
       </form>
+      )}
 
       {/* SEARCH */}
 
-      {!isPatient && (
+      {canSearchStudies && (
         <form
           className="search-card"
           onSubmit={handleSearch}
@@ -668,6 +800,7 @@ function App() {
                 : 'Search'}
             </button>
 
+            {canSyncStudies && (
             <button
               className="secondary"
               type="button"
@@ -678,6 +811,7 @@ function App() {
                 ? 'Syncing...'
                 : 'Sync from Orthanc'}
             </button>
+            )}
 
           </div>
 
@@ -685,11 +819,12 @@ function App() {
       )}
 
     </div>
-  )}
+  ))}
 
   {/* PATIENTS PAGE */}
 
-  {activePage === 'patients' && (
+  {canViewPatientDirectory &&
+    activePage === 'patients' && (
     <section className="study-section">
 
       <div className="section-heading">
@@ -723,7 +858,8 @@ function App() {
 
   {/* REPORTS PAGE */}
 
-  {activePage === 'reports' && (
+  {canViewReports &&
+    activePage === 'reports' && (
     <section className="study-section">
 
       <div className="section-heading">
@@ -762,7 +898,7 @@ function App() {
 
   {/* STUDIES */}
 
-  {!isPatient &&
+  {canViewStudies &&
     (activePage === 'dashboard' ||
       activePage === 'studies') && (
 

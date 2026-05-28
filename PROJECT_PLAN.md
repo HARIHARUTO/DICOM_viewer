@@ -20,7 +20,7 @@ Unlike the earlier draft plan, this project does not use Cornerstone.js directly
 - Use DICOMweb standards: STOW-RS, QIDO-RS, and WADO-RS.
 - Keep frontend, backend, viewer, DICOM server, and database decoupled.
 - Containerize the full system using Docker Compose.
-- Validate the system using automated tests, build checks, dependency audits, and configuration validation.
+- Validate the system using automated tests, build checks, dependency audit reporting, and configuration validation.
 
 ## Overall Project Status
 
@@ -36,7 +36,7 @@ Completed:
 - PostgreSQL metadata-only schema.
 - Orthanc and OHIF integration through Docker Compose.
 - README and formal project documentation.
-- Unit tests, frontend component tests, TypeScript build validation, dependency audit, and Docker Compose configuration validation.
+- Unit tests, frontend component tests, TypeScript build validation, dependency audit reporting, and Docker Compose configuration validation.
 
 Pending or recommended:
 
@@ -211,11 +211,11 @@ Completed:
 - Frontend tests passed.
 - Backend build passed.
 - Frontend build passed.
-- Dependency audit passed with zero vulnerabilities.
+- Dependency audit was run and currently reports moderate dependency advisories that require follow-up.
 - Docker Compose configuration parsed successfully.
 - README was upgraded to an industry-standard format.
 - `documentation.md` was created and updated with QA and team contribution details.
-- Project was committed and pushed to GitHub.
+- Git status can be checked before final submission or push.
 
 Pending:
 
@@ -233,9 +233,9 @@ The following validation was completed:
 - Frontend component testing with Vitest, React Testing Library, and jsdom.
 - TypeScript compilation for backend and frontend.
 - Production frontend build using Vite.
-- Dependency security audit using npm audit.
+- Dependency security audit reporting using npm audit.
 - Docker Compose configuration validation.
-- Git staging, commit, and push verification.
+- Git status verification before final submission.
 
 ### QA Not Yet Performed
 

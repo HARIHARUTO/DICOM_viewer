@@ -67,3 +67,7 @@ The following are currently out of scope:
 - Clinical safety claims without technical evidence
 
 ## Medical Data Notice
+
+This project is intended for educational, research, and engineering demonstration use. Do not upload protected health information, real patient identifiers, or clinical studies unless the deployment has been reviewed for privacy, security, legal, and clinical compliance requirements.
+
+Production use requires secure authentication, authorization, transport encryption, audit logging, backup and retention policies, and a clinical validation process appropriate for the intended environment.

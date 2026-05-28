@@ -10,10 +10,17 @@ MediView AI provides an integrated browser-based radiology workspace for:
 - OHIF medical image viewing
 - Metadata synchronization
 - Study search and filtering
-- AI-assisted reporting workflows
-- Doctor-patient collaboration UI
+- Prototype AI reports UI for demonstration
+- Prototype doctor-patient consultation UI
 
 The platform follows a decoupled architecture where the frontend, backend, viewer, DICOM server, and metadata database operate independently.
+
+Note: the current AI reports, consultation areas, and role-based access controls are frontend demonstration features. The implemented backend workflow covers DICOM upload, Orthanc storage, metadata sync, study search, and OHIF launch; real AI inference, report persistence, chat, authentication, and backend-enforced role-based access are future production work.
+
+Additional project docs:
+
+- [What We Have Done and Team Contribution](WHAT_WE_DONE_AND_TEAM.md)
+- [Technical Guide, Running Steps, and Hosting](TECHNICAL_RUN_AND_HOSTING_GUIDE.md)
 
 ---
 
@@ -31,16 +38,18 @@ The platform follows a decoupled architecture where the frontend, backend, viewe
 - Zero-footprint browser-based viewing
 
 ## 🧠 AI Radiology Workspace UI
-- AI findings dashboard
-- Reports section
+- Prototype AI findings dashboard
+- Prototype reports section
 - Patient directory
 - Recent study tracking
-- Doctor consultation panel
+- Prototype doctor consultation panel
+- UI-level role-based access for admin, doctor, and patient views
 
 ## 🔎 Study Search & Metadata Sync
 - Search studies using patient name, modality, accession, etc.
 - Sync metadata from Orthanc into PostgreSQL
 - Metadata normalization pipeline
+- Dashboard PACS status indicator backed by `/health/ready`
 
 ## 🐳 Containerized Architecture
 - Docker Compose based deployment
@@ -66,10 +75,10 @@ The platform follows a decoupled architecture where the frontend, backend, viewe
 # 🖥️ Application Modules
 
 ## Dashboard
-- AI radiology workspace
+- Radiology workspace dashboard
 - Upload metrics
 - Study tracking
-- Doctor collaboration panel
+- Prototype doctor collaboration panel
 
 ## Upload Workflow
 - Upload DICOM scans directly into Orthanc
@@ -78,10 +87,10 @@ The platform follows a decoupled architecture where the frontend, backend, viewe
 
 ## Study Explorer
 - Study listing and metadata filtering
-- OHIF Viewer launch support
+- OHIF Viewer launch support for doctor/admin roles
 
 ## AI Reports
-- AI-assisted radiology reporting interface
+- Prototype AI-assisted radiology reporting interface
 
 ## Patient Directory
 - Patient metadata management UI
@@ -168,11 +177,15 @@ Orthanc PACS
 |
 |-- frontend/
 |   |-- src/
-|   |   |-- components/
-|   |   |-- pages/
-|   |   |-- layouts/
-|   |   |-- styles/
-|   |   `-- context/
+|   |   |-- test/
+|   |   |-- App.test.tsx
+|   |   |-- App.tsx
+|   |   |-- api.ts
+|   |   |-- config.ts
+|   |   |-- format.ts
+|   |   |-- main.tsx
+|   |   |-- styles.css
+|   |   `-- types.ts
 |   |-- Dockerfile
 |   |-- nginx.conf
 |   |-- vite.config.ts
@@ -220,14 +233,17 @@ POSTGRES_DB=dicom_metadata
 POSTGRES_USER=dicom_app
 POSTGRES_PASSWORD=dicom_app_password
 POSTGRES_PORT=5432
+DATABASE_URL=postgres://dicom_app:dicom_app_password@localhost:5432/dicom_metadata
 
 ORTHANC_USERNAME=orthanc
 ORTHANC_PASSWORD=orthanc
 ORTHANC_HTTP_PORT=8042
+ORTHANC_DICOMWEB_URL=http://localhost:8042/dicom-web
 
 BACKEND_PORT=4000
 FRONTEND_PORT=3000
 OHIF_PORT=3001
+CORS_ORIGINS=http://localhost:3000,http://localhost:3001
 ```
 
 ---
@@ -289,6 +305,7 @@ npm install
 ```powershell
 cd backend
 npm install
+npm run migrate
 npm run dev
 ```
 
@@ -323,6 +340,12 @@ docker compose up ohif
 
 # 🧪 Testing
 
+Install service dependencies first:
+
+```powershell
+npm run install:all
+```
+
 Run all tests:
 
 ```powershell
@@ -351,6 +374,15 @@ Docker validation:
 
 ```powershell
 docker compose config
+```
+
+Dependency audit:
+
+```powershell
+cd backend
+npm audit
+cd ..\frontend
+npm audit
 ```
 
 ---
@@ -427,6 +459,7 @@ The current version demonstrates:
 - Study browsing UI
 - Modern radiology dashboard UX
 - Dockerized deployment architecture
+- Automated backend/frontend test coverage and TypeScript build validation
 
 This project is intended as a production-oriented academic and engineering demonstration platform for scalable radiology workflow systems.
 

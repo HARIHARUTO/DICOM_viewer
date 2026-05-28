@@ -8,6 +8,14 @@ type StudyQuery = {
   modality?: string;
 };
 
+type ReadyResponse = {
+  status: string;
+  checks?: {
+    postgres?: string;
+    orthancDicomweb?: string;
+  };
+};
+
 const buildUrl = (path: string, query?: Record<string, string | undefined>) => {
   const url = new URL(`${appConfig.apiBaseUrl}${path}`);
 
@@ -18,6 +26,13 @@ const buildUrl = (path: string, query?: Record<string, string | undefined>) => {
   });
 
   return url;
+};
+
+const buildBackendUrl = (path: string) => {
+  const url = new URL(appConfig.apiBaseUrl);
+  url.pathname = url.pathname.replace(/\/api\/?$/, '');
+
+  return new URL(path, url);
 };
 
 const parseJsonResponse = async <T>(response: Response): Promise<T> => {
@@ -32,6 +47,11 @@ const parseJsonResponse = async <T>(response: Response): Promise<T> => {
 };
 
 export const api = {
+  async getPacsStatus(): Promise<ReadyResponse> {
+    const response = await fetch(buildBackendUrl('/health/ready'));
+    return parseJsonResponse<ReadyResponse>(response);
+  },
+
   async listStudies(query: StudyQuery): Promise<StudyListResponse> {
     const response = await fetch(buildUrl('/studies', query));
     return parseJsonResponse<StudyListResponse>(response);

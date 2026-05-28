@@ -5,7 +5,7 @@ ARG VITE_OHIF_BASE_URL=http://localhost:3001
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 ENV VITE_OHIF_BASE_URL=$VITE_OHIF_BASE_URL
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 COPY tsconfig.json vite.config.ts index.html ./
 COPY src ./src
 RUN npm run build

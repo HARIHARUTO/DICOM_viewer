@@ -103,13 +103,13 @@ Docker Compose defines separate services for the frontend, backend, Orthanc, Pos
 
 ## 9. Quality Assurance and Testing
 
-The project was validated through automated tests, build checks, dependency audits, and infrastructure configuration validation. The QA approach focused on verifying the core medical imaging workflow while preserving the architectural constraints of the system.
+The project is validated through automated tests, build checks, dependency audit reporting, and infrastructure configuration validation. The QA approach focuses on verifying the core medical imaging workflow while preserving the architectural constraints of the system.
 
 Backend validation was performed using Vitest. The tests covered DICOM metadata mapping from QIDO-RS JSON responses, validation of required identifiers such as StudyInstanceUID, and multipart request generation for STOW-RS upload behavior.
 
-Frontend validation was performed using Vitest, React Testing Library, and jsdom. The tests confirmed that the dashboard renders correctly, upload and worklist sections are available, and the application delegates image viewing to OHIF instead of implementing custom DICOM rendering.
+Frontend validation was performed using Vitest, React Testing Library, and jsdom. The tests confirm that the current dashboard renders correctly, the upload and consultation sections are available, and study viewing is launched through OHIF instead of implementing custom DICOM rendering.
 
-Build validation was performed using TypeScript compilation and production build checks for both backend and frontend modules. Dependency security validation was performed using npm audit, and Docker Compose configuration was validated to confirm service wiring, environment variables, ports, volumes, and container dependencies.
+Build validation is performed using TypeScript compilation and production build checks for both backend and frontend modules. Dependency security status is checked using npm audit, and current audit advisories should be reviewed before production use. Docker Compose configuration is validated to confirm service wiring, environment variables, ports, volumes, and container dependencies.
 
 Selenium was not used in the current implementation. Browser-level end-to-end testing can be added in a future release using Selenium or Playwright to validate full workflows such as DICOM upload, metadata synchronization, study listing, and OHIF viewer launch in a real browser environment.
 
