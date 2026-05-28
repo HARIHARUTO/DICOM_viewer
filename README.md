@@ -1,121 +1,156 @@
-# Zero Footprint DICOM Viewer with Integrated Radiology Workflow System
+# MediView AI  
+### Zero-Footprint DICOM Imaging & Radiology Workflow Platform
 
-Team Members-
+Production-oriented medical imaging workflow system built using React, TypeScript, Express, Orthanc, OHIF Viewer, PostgreSQL, and Docker.
 
-- Hari Sankar Reddy Yaram
-- Uma MP
-- Varsha CP
-- Shreya GS
-- Aisiri K
-- Tejas S Chandrashekhar
+MediView AI provides an integrated browser-based radiology workspace for:
 
+- DICOM upload and management
+- Orthanc PACS integration
+- OHIF medical image viewing
+- Metadata synchronization
+- Study search and filtering
+- AI-assisted reporting workflows
+- Doctor-patient collaboration UI
 
-Production-oriented medical imaging workflow platform built with React, Express, Orthanc, OHIF Viewer, PostgreSQL, and Docker.
+The platform follows a decoupled architecture where the frontend, backend, viewer, DICOM server, and metadata database operate independently.
 
-The system provides a browser-based workflow for uploading DICOM studies, synchronizing metadata, listing studies, and launching OHIF Viewer for image review. It follows a decoupled architecture where the viewer, backend, DICOM server, and database have separate responsibilities.
+---
 
-## Table of Contents
+# 🚀 Features
 
-- [Overview](#overview)
-- [Project Documentation](#project-documentation)
-- [Architecture Principles](#architecture-principles)
-- [System Architecture](#system-architecture)
-- [Technology Stack](#technology-stack)
-- [Repository Structure](#repository-structure)
-- [Prerequisites](#prerequisites)
-- [Environment Configuration](#environment-configuration)
-- [Run With Docker](#run-with-docker)
-- [Run Locally For Development](#run-locally-for-development)
-- [Service Endpoints](#service-endpoints)
-- [Quality Assurance And Testing](#quality-assurance-and-testing)
-- [API Reference](#api-reference)
-- [Operational Notes](#operational-notes)
-- [Troubleshooting](#troubleshooting)
-- [Security And Compliance Notes](#security-and-compliance-notes)
-- [Known Edge Cases](#known-edge-cases)
+## 📤 DICOM Upload Workflow
+- Upload CT, MRI, OCT, X-Ray and other DICOM studies
+- Multipart upload support
+- Upload progress tracking
+- Orthanc PACS integration using STOW-RS
 
-## Overview
+## 🩻 OHIF Medical Viewer Integration
+- Launch studies directly in OHIF Viewer
+- QIDO-RS and WADO-RS support
+- Zero-footprint browser-based viewing
 
-This project implements the workflow:
+## 🧠 AI Radiology Workspace UI
+- AI findings dashboard
+- Reports section
+- Patient directory
+- Recent study tracking
+- Doctor consultation panel
+
+## 🔎 Study Search & Metadata Sync
+- Search studies using patient name, modality, accession, etc.
+- Sync metadata from Orthanc into PostgreSQL
+- Metadata normalization pipeline
+
+## 🐳 Containerized Architecture
+- Docker Compose based deployment
+- Separate frontend, backend, Orthanc, OHIF, and PostgreSQL services
+
+---
+
+# 🧱 Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React + TypeScript + Vite |
+| Styling | CSS |
+| Backend | Node.js + Express |
+| DICOM Server | Orthanc |
+| Medical Viewer | OHIF Viewer |
+| Database | PostgreSQL |
+| Containerization | Docker + Docker Compose |
+| Testing | Vitest + React Testing Library |
+
+---
+
+# 🖥️ Application Modules
+
+## Dashboard
+- AI radiology workspace
+- Upload metrics
+- Study tracking
+- Doctor collaboration panel
+
+## Upload Workflow
+- Upload DICOM scans directly into Orthanc
+- Progress tracking
+- Recent upload history
+
+## Study Explorer
+- Study listing and metadata filtering
+- OHIF Viewer launch support
+
+## AI Reports
+- AI-assisted radiology reporting interface
+
+## Patient Directory
+- Patient metadata management UI
+
+---
+
+# ⚙️ System Workflow
 
 ```text
-Upload -> Backend -> Orthanc -> Metadata Sync -> Frontend -> OHIF Viewer -> Diagnosis Support
+Frontend Upload
+        ↓
+Express Backend
+        ↓
+Orthanc PACS (STOW-RS)
+        ↓
+Metadata Sync (QIDO-RS)
+        ↓
+PostgreSQL Metadata Storage
+        ↓
+OHIF Viewer Launch
+        ↓
+Browser-based Medical Image Review
 ```
 
-DICOM files are uploaded through the React dashboard, sent to the Express backend, stored in Orthanc using DICOMweb STOW-RS, indexed into PostgreSQL as metadata, and viewed through OHIF Viewer using QIDO-RS and WADO-RS.
+---
 
-## Project Documentation
-
-Primary project documents:
-
-- [Project documentation](documentation.md): architecture, workflow, QA summary, team contributions, challenges, and future scope.
-- [4-week development plan](PROJECT_PLAN.md): week-by-week plan, completion status, QA plan, and remaining production work.
-
-## Architecture Principles
-
-- Do not build a DICOM viewer from scratch.
-- Use OHIF Viewer as the only DICOM rendering engine.
-- Use Orthanc as the DICOM server and DICOM storage layer.
-- Do not store DICOM files or pixel data in PostgreSQL.
-- Store only normalized study metadata and selected DICOM JSON metadata in PostgreSQL.
-- Use DICOMweb standards: STOW-RS, QIDO-RS, and WADO-RS.
-- Keep frontend, backend, viewer, DICOM server, and database decoupled.
-
-## System Architecture
-
-The platform is split into five runtime components:
+# 🏗️ System Architecture
 
 ```text
 Browser
   |
-  | React dashboard
+  | React Dashboard
   v
-Frontend container
+Frontend Container
   |
-  | REST upload/search requests
+  | REST APIs
   v
-Backend container
+Backend Container
   |
-  | STOW-RS upload, QIDO-RS metadata sync, WADO-RS/QIDO-RS proxy
+  | STOW-RS Upload
+  | QIDO-RS Metadata Sync
+  | DICOMweb Gateway
   v
-Orthanc container
+Orthanc PACS
   |
-  | DICOM object storage
+  | DICOM Storage
   v
-Orthanc storage volume
+Orthanc Volume
 
-Backend container
+Backend
   |
-  | Metadata-only persistence
+  | Metadata Persistence
   v
-PostgreSQL container
+PostgreSQL
 
 Browser
   |
-  | Launch selected study
+  | Launch Study
   v
-OHIF Viewer container
+OHIF Viewer
   |
-  | QIDO-RS and WADO-RS through backend gateway
+  | QIDO-RS / WADO-RS
   v
-Orthanc container
+Orthanc PACS
 ```
 
-The React application does not render medical images. It only manages workflow actions such as upload, search, and viewer launch. OHIF Viewer handles all image rendering.
+---
 
-## Technology Stack
-
-| Layer | Technology | Responsibility |
-| --- | --- | --- |
-| Frontend | React, TypeScript, Vite, Nginx | Dashboard, DICOM upload UI, study list, OHIF launch |
-| Backend | Node.js, Express, TypeScript | Application APIs, STOW-RS upload, QIDO-RS metadata sync, DICOMweb gateway |
-| DICOM Server | Orthanc | DICOM storage and DICOMweb endpoints |
-| Viewer | OHIF Viewer | Medical image rendering |
-| Database | PostgreSQL | Study metadata only |
-| Infrastructure | Docker Compose | Multi-container local deployment |
-| QA | Vitest, React Testing Library, jsdom, TypeScript, npm audit | Unit tests, component tests, build validation, dependency audit |
-
-## Repository Structure
+# 📂 Repository Structure
 
 ```text
 .
@@ -130,38 +165,49 @@ The React application does not render medical images. It only manages workflow a
 |   |-- Dockerfile
 |   |-- package.json
 |   `-- tsconfig.json
+|
 |-- frontend/
 |   |-- src/
+|   |   |-- components/
+|   |   |-- pages/
+|   |   |-- layouts/
+|   |   |-- styles/
+|   |   `-- context/
 |   |-- Dockerfile
 |   |-- nginx.conf
-|   |-- package.json
-|   `-- vite.config.ts
+|   |-- vite.config.ts
+|   `-- package.json
+|
 |-- infra/
 |   `-- ohif/
 |       `-- app-config.js
+|
 |-- docker-compose.yml
+|-- README.md
 |-- PROJECT_PLAN.md
 |-- documentation.md
-|-- .env.example
-|-- package.json
-`-- README.md
+`-- .env.example
 ```
 
-## Prerequisites
+---
+
+# ⚡ Prerequisites
 
 Install the following before running the platform:
 
 - Docker Desktop
 - Docker Compose
-- Node.js 20.11 or later
+- Node.js 20+
 - npm
 - Git
 
-On Windows, Docker Desktop must be running with the Linux engine enabled.
+On Windows, Docker Desktop must be running with Linux containers enabled.
 
-## Environment Configuration
+---
 
-Create the local environment file:
+# 🔐 Environment Configuration
+
+Create the environment file:
 
 ```powershell
 Copy-Item .env.example .env
@@ -169,7 +215,7 @@ Copy-Item .env.example .env
 
 Default environment values:
 
-```text
+```env
 POSTGRES_DB=dicom_metadata
 POSTGRES_USER=dicom_app
 POSTGRES_PASSWORD=dicom_app_password
@@ -184,254 +230,219 @@ FRONTEND_PORT=3000
 OHIF_PORT=3001
 ```
 
-Do not commit `.env`. It is ignored by Git.
+---
 
-## Run With Docker
+# 🐳 Run With Docker
 
 From the project root:
 
 ```powershell
-cd "c:\Users\HARI SANKAR REDDY\OneDrive\Desktop\New folder\New folder\DICOM_viewer"
-Copy-Item .env.example .env
 docker compose up --build
 ```
 
 Open the services:
 
 | Service | URL |
-| --- | --- |
-| React worklist | http://localhost:3000 |
+|---|---|
+| Frontend | http://localhost:3000 |
 | OHIF Viewer | http://localhost:3001 |
-| Backend readiness check | http://localhost:4000/health/ready |
-| Orthanc admin | http://localhost:8042 |
+| Backend API | http://localhost:4000 |
+| Orthanc Admin | http://localhost:8042 |
 
-Orthanc local credentials:
+Orthanc credentials:
 
 ```text
 Username: orthanc
 Password: orthanc
 ```
 
-Stop the stack:
+Stop containers:
 
 ```powershell
 docker compose down
 ```
 
-Remove volumes only when you intentionally want to delete local PostgreSQL and Orthanc data:
+Remove volumes:
 
 ```powershell
 docker compose down -v
 ```
 
-## Run Locally For Development
+---
 
-Start only PostgreSQL and Orthanc:
+# 💻 Run Locally For Development
+
+## Start PostgreSQL + Orthanc
 
 ```powershell
 docker compose up postgres orthanc
 ```
 
-Install dependencies:
+## Install dependencies
 
 ```powershell
-npm run install:all
+npm install
 ```
 
-Start the backend:
+## Start backend
 
 ```powershell
 cd backend
-$env:DATABASE_URL="postgres://dicom_app:dicom_app_password@localhost:5432/dicom_metadata"
-$env:ORTHANC_DICOMWEB_URL="http://localhost:8042/dicom-web"
-$env:ORTHANC_USERNAME="orthanc"
-$env:ORTHANC_PASSWORD="orthanc"
+npm install
 npm run dev
 ```
 
-Start the frontend in another terminal:
+## Start frontend
 
 ```powershell
 cd frontend
+npm install
 npm run dev
 ```
 
-Start OHIF through Docker:
+## Start OHIF
 
 ```powershell
 docker compose up ohif
 ```
 
-## Service Endpoints
+---
 
-| Component | Endpoint | Purpose |
-| --- | --- | --- |
-| Backend live check | `GET /health/live` | Confirms backend process is running |
-| Backend ready check | `GET /health/ready` | Confirms backend can reach PostgreSQL and Orthanc |
-| Upload API | `POST /api/studies/upload` | Receives DICOM files and forwards them to Orthanc using STOW-RS |
-| Study list API | `GET /api/studies` | Returns metadata from PostgreSQL |
-| Metadata sync API | `POST /api/studies/sync` | Syncs metadata from Orthanc using QIDO-RS |
-| DICOMweb gateway | `/api/dicomweb/*` | Read-only QIDO-RS/WADO-RS gateway for OHIF |
+# 🔌 API Endpoints
 
-## Quality Assurance And Testing
+| Endpoint | Purpose |
+|---|---|
+| GET /health/live | Backend live status |
+| GET /health/ready | Backend readiness |
+| POST /api/studies/upload | Upload DICOM studies |
+| GET /api/studies | Fetch metadata |
+| POST /api/studies/sync | Sync Orthanc metadata |
+| /api/dicomweb/* | DICOMweb gateway |
 
-The current QA process uses automated tests, type checking, production builds, dependency audits, and infrastructure configuration validation.
+---
 
-Run the full test suite:
+# 🧪 Testing
+
+Run all tests:
 
 ```powershell
 npm test
 ```
 
-Run production build validation:
+Build validation:
 
 ```powershell
 npm run build
 ```
 
-Run backend tests only:
-
-```powershell
-npm run backend:test
-```
-
-Run frontend tests only:
+Frontend tests:
 
 ```powershell
 npm run frontend:test
 ```
 
-Run dependency security audits:
+Backend tests:
 
 ```powershell
-cd backend
-npm audit --json
-
-cd ../frontend
-npm audit --json
+npm run backend:test
 ```
 
-Validate Docker Compose configuration:
+Docker validation:
 
 ```powershell
 docker compose config
 ```
 
-QA coverage currently includes:
+---
 
-- Backend DICOM metadata mapping tests
-- Missing `StudyInstanceUID` validation
-- STOW-RS multipart body generation tests
-- Frontend dashboard rendering tests
-- OHIF delegation verification at UI level
-- TypeScript compilation for backend and frontend
-- Frontend production build validation
-- Dependency vulnerability audit
-- Docker Compose configuration validation
+# 📡 Example API Usage
 
-Selenium is not used in the current version. Browser-level end-to-end testing can be added later with Selenium or Playwright to validate upload, metadata sync, study listing, and OHIF launch in a running browser environment.
-
-## API Reference
-
-Upload DICOM files:
+## Upload DICOM Files
 
 ```powershell
 curl.exe -X POST http://localhost:4000/api/studies/upload `
-  -F "files=@C:\path\to\image1.dcm" `
-  -F "files=@C:\path\to\image2.dcm"
+  -F "files=@C:\path\to\image1.dcm"
 ```
 
-Sync metadata from Orthanc:
+## Sync Metadata
 
 ```powershell
 curl.exe -X POST http://localhost:4000/api/studies/sync
 ```
 
-List studies:
+## List Studies
 
 ```powershell
-curl.exe "http://localhost:4000/api/studies?patientName=Doe&modality=CT"
+curl.exe "http://localhost:4000/api/studies"
 ```
 
-Open OHIF with a specific study:
+## Open OHIF Viewer
 
 ```text
 http://localhost:3001/viewer?StudyInstanceUIDs=<study-instance-uid>
 ```
 
-OHIF reads DICOMweb through:
+---
 
-```text
-http://localhost:4000/api/dicomweb
-```
+# 🛡️ Security Notes
 
-## Operational Notes
+Before production deployment:
 
-- Orthanc is the source of truth for DICOM objects.
-- PostgreSQL is the source of truth for application-facing metadata search.
-- The backend DICOMweb gateway is read-only for OHIF.
-- Uploads must go through `/api/studies/upload`.
-- The backend runs database migrations at startup.
-- DICOM upload limits are controlled through `MAX_UPLOAD_FILES` and `MAX_UPLOAD_BYTES`.
-- OHIF configuration is mounted from `infra/ohif/app-config.js`.
+- Replace default credentials
+- Enable HTTPS
+- Add JWT authentication
+- Implement RBAC
+- Add audit logging
+- Secure environment variables
+- Restrict Orthanc admin access
 
-## Troubleshooting
+---
 
-If Docker returns an API version or engine error, restart Docker Desktop and run:
+# 🔮 Future Scope
 
-```powershell
-wsl --shutdown
-docker version
-docker compose up --build
-```
+Planned production-grade enhancements:
 
-If `ohif/app:latest` fails to pull:
+- Google OAuth authentication
+- JWT-based role access control
+- Real-time doctor consultation chat
+- AI-powered diagnosis assistance
+- Study annotations and measurements
+- Cloud PACS deployment
+- DICOM SR support
+- Audit logging and monitoring
+- Dark/light theme switching
+- Mobile-responsive radiology workspace
+- AWS/GCP/Azure deployment
 
-```powershell
-docker pull ohif/app:latest
-```
+---
 
-If a port is already in use, update `.env`:
+# 📌 Current Status
 
-```text
-FRONTEND_PORT=3002
-OHIF_PORT=3003
-BACKEND_PORT=4001
-ORTHANC_HTTP_PORT=8043
-POSTGRES_PORT=5433
-```
+The current version demonstrates:
 
-If backend readiness fails, check that PostgreSQL and Orthanc are running:
+- End-to-end DICOM upload workflow
+- Orthanc PACS integration
+- OHIF Viewer integration
+- Metadata synchronization
+- Study browsing UI
+- Modern radiology dashboard UX
+- Dockerized deployment architecture
 
-```powershell
-docker compose ps
-```
+This project is intended as a production-oriented academic and engineering demonstration platform for scalable radiology workflow systems.
 
-If frontend loads but studies are missing:
+---
 
-```powershell
-curl.exe -X POST http://localhost:4000/api/studies/sync
-```
+# 👨‍💻 Team Members
 
-## Security And Compliance Notes
+- Hari Sankar Reddy Yaram
+- Uma MP
+- Varsha CP
+- Shreya GS
+- Aisiri K
+- Tejas S Chandrashekhar
 
-This repository is structured for engineering demonstration and production-oriented architecture, but additional controls are required before clinical deployment:
+---
 
-- Replace default Orthanc credentials.
-- Use HTTPS in deployed environments.
-- Add role-based access control.
-- Add access audit logs.
-- Add secure secret management.
-- Restrict Orthanc admin exposure.
-- Configure backup and restore procedures.
-- Validate the system against applicable medical, privacy, and institutional requirements.
+# 📄 License
 
-## Known Edge Cases
-
-- Large uploads are capped by configured upload limits.
-- Empty file uploads return HTTP 400.
-- Orthanc upload failures are recorded in upload audit metadata.
-- QIDO-RS studies without `StudyInstanceUID` are skipped during sync.
-- PostgreSQL never stores DICOM files or pixel data.
-- OHIF is required for viewing; the React app does not render images.
-- Docker image builds require Docker Desktop to be running.
+This project is intended for educational, research, and engineering demonstration purposes.
