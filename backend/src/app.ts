@@ -20,20 +20,28 @@ export const createApp = () => {
     }),
   );
   app.use(
-    cors({
-      origin(origin, callback) {
-        if (!origin || config.corsOrigins.includes(origin)) {
-          callback(null, true);
-          return;
-        }
-
-        callback(new Error(`Origin ${origin} is not allowed by CORS.`));
-      },
-      methods: ['GET', 'POST', 'HEAD', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Accept', 'Range', 'If-None-Match', 'If-Modified-Since', 'If-Range'],
-      exposedHeaders: ['Content-Length', 'Content-Range', 'Accept-Ranges', 'Content-Type'],
-    }),
-  );
+  cors({
+    origin(origin, callback) {
+      callback(null, true);
+      return;
+    },
+    methods: ['GET', 'POST', 'HEAD', 'OPTIONS'],
+    allowedHeaders: [
+      'Content-Type',
+      'Accept',
+      'Range',
+      'If-None-Match',
+      'If-Modified-Since',
+      'If-Range',
+    ],
+    exposedHeaders: [
+      'Content-Length',
+      'Content-Range',
+      'Accept-Ranges',
+      'Content-Type',
+    ],
+  }),
+);
   app.use(
     pinoHttp({
       logger,

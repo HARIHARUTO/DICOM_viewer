@@ -24,11 +24,24 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
     return;
   }
 
-  logger.error({ error }, 'Unhandled request error');
-  res.status(500).json({
-    error: {
-      message: 'Internal server error.',
-    },
-  });
+  console.error('FULL BACKEND ERROR:', error);
+
+logger.error(
+  {
+    message: error instanceof Error ? error.message : 'Unknown error',
+    stack: error instanceof Error ? error.stack : undefined,
+    error,
+  },
+  'Unhandled request error',
+);
+
+res.status(500).json({
+  error: {
+    message:
+      error instanceof Error
+        ? error.message
+        : 'Internal server error.',
+  },
+});
 };
 
